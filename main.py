@@ -2,8 +2,6 @@
 
 import random
 import tkinter as tk
-from turtle import bgcolor
-
 import numpy as np
 
 # %%
@@ -35,14 +33,18 @@ class CelestialBody:
 
     def bbox(self):
         """Function to return the bbox of the celestial body.
-
+        (x0, y0) is the top left corner and (x1, y1) is the bottom right.
         Returns:
             x0, y0, x1, y1: The space position of the bodies
         """
+        return self.x-self.radius, self.y-self.radius,  self.x+self.radius, self.y+self.radius
 class Universe:
     """The class that emulates the universe and the physics laws and forces such as gravity."""
-    def __init__(self) -> None:
+    def __init__(self, size) -> None:
         self.bodies = []
+        if size <= 0:
+            raise ValueError("Universe size should not be 0 or a negative number")
+        self.size = size
     
     def __iter__(self):
         return iter(self.bodies)
@@ -53,13 +55,13 @@ class Universe:
         """
         for index in range(number_of_bodies):
             mass = random.randint(1, 100)
-            radius = random.randint(1, 100)
-            x, y = random.randint(1,100) * random.random(), random.randint(1,100) * random.random()
+            radius = random.randint(1, 20)
+            x, y = random.randint(radius,self.size-2*radius) * random.random() + radius, random.randint(radius,self.size-2*radius) * random.random() + radius
             self.bodies.append(CelestialBody(mass, radius, x, y))
 
 # %%
-universe = Universe()
-universe.random_big_bang(10)
+universe = Universe(400)
+universe.random_big_bang(100)
 
 for body in universe:
     print(body)
@@ -68,13 +70,14 @@ for body in universe:
 # Visualize
 mainWindow = tk.Tk()
 mainWindow.title("Gravitation simulation")
-mainWindow.geometry("800x800")
+mainWindow.configure(width=universe.size, height=universe.size)
 
-canvas = tk.Canvas(mainWindow, width=800, height=800, bg="ivory")
+canvas = tk.Canvas(mainWindow, width=universe.size, height=universe.size, bg="ivory")
 canvas.pack()
 
 for body in universe:
-    body.figure = canvas.create_oval()
+    x0, y0, x1, y1 = body.bbox()
+    body.figure = canvas.create_oval(x0, y0, x1, y1, fill="red")
 
 mainWindow.mainloop()
 # %%
